@@ -150,7 +150,7 @@ def display_pdf(pdf_buffer: BytesIO, filename: str = "class_notes.pdf"):
                     help="Percentage of available container width"
                 )
                 width = str(width) + "%"
-                height = -1  # Auto height (shows all pages) for responsive mode
+                height = 530  # Constant height for consistent viewing
         
         try:
             # Professional PDF viewer implementation (structure-vision style)
