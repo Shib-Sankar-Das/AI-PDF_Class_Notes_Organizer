@@ -2,6 +2,7 @@
 Class Note Organizer - Streamlit App
 """
 import streamlit as st
+from streamlit_pdf_viewer import pdf_viewer
 from config import get_gemini_api_key
 from langgraph_agent import NoteOrganizerAgent
 from pdf_generator import PDFGenerator
@@ -67,12 +68,28 @@ def initialize_session_state():
 
 
 def display_pdf(pdf_buffer: BytesIO, filename: str = "class_notes.pdf"):
-    """Display PDF in the viewer - Chrome-compatible for Streamlit Cloud"""
+    """Display PDF using streamlit-pdf-viewer - Works on Streamlit Cloud!"""
     if pdf_buffer:
         pdf_buffer.seek(0)
         pdf_bytes = pdf_buffer.read()
         
-        # Prominent download button (works reliably on all platforms)
+        # Use streamlit-pdf-viewer for reliable display on Streamlit Cloud
+        st.subheader("📄 PDF Preview")
+        
+        try:
+            # This works perfectly on Streamlit Cloud and locally
+            pdf_viewer(
+                input=pdf_bytes,
+                width=700,
+                height=800,
+                rendering="unwrap",  # Better rendering
+                key=f"pdf_viewer_{id(pdf_buffer)}"  # Unique key
+            )
+        except Exception as e:
+            st.warning(f"PDF viewer unavailable: {str(e)}")
+            st.info("💡 Use the download button below to view your PDF.")
+        
+        # Download button as backup
         st.download_button(
             label="📥 Download PDF",
             data=pdf_bytes,
@@ -80,25 +97,8 @@ def display_pdf(pdf_buffer: BytesIO, filename: str = "class_notes.pdf"):
             mime="application/pdf",
             type="primary",
             use_container_width=True,
-            help="Download to view the complete PDF document"
+            help="Download your formatted PDF document"
         )
-        
-        st.info("💡 **Note**: PDF preview may not work on some browsers when deployed. Use the download button above to view your PDF.")
-        
-        # Try to display preview for browsers that support it (works locally)
-        try:
-            base64_pdf = base64.b64encode(pdf_bytes).decode('utf-8')
-            # Use embed tag instead of iframe - better compatibility
-            pdf_display = f'''
-                <div style="margin-top: 20px;">
-                    <embed src="data:application/pdf;base64,{base64_pdf}" 
-                           width="100%" height="800px" type="application/pdf"
-                           style="border: 2px solid #e0e0e0; border-radius: 10px;">
-                </div>
-            '''
-            st.markdown(pdf_display, unsafe_allow_html=True)
-        except Exception:
-            pass  # Silently fail if preview doesn't work
 
 
 
