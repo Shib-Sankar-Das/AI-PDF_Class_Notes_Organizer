@@ -150,15 +150,7 @@ def display_pdf(pdf_buffer: BytesIO, filename: str = "class_notes.pdf"):
                     help="Percentage of available container width"
                 )
                 width = str(width) + "%"
-                
-                height = st.slider(
-                    label="PDF height (%)", 
-                    min_value=50, 
-                    max_value=100, 
-                    value=80,  # 80% of viewport height (responsive)
-                    help="Percentage of available viewport height"
-                )
-                height = str(height) + "%"
+                height = -1  # Auto height (shows all pages) for responsive mode
         
         try:
             # Professional PDF viewer implementation (structure-vision style)
