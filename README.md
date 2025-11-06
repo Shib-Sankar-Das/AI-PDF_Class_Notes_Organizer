@@ -9,7 +9,7 @@ A powerful Streamlit application that uses LangGraph with Google's Gemini API to
 - 📝 **Markdown Conversion**: Automatically converts notes to well-formatted markdown
 - ✏️ **Built-in Text Editor**: Edit generated content with full markdown support
 - 📄 **PDF Generation**: Export notes to professional PDFs with proper formatting
-- 👁️ **Live PDF Preview**: View generated PDFs directly in the browser
+- 👁️ **Live PDF Preview**: View generated PDFs directly in the browser using `streamlit-pdf-viewer` (works on Streamlit Cloud!)
 - ➕ **Multi-Topic Support**: Add multiple topics to a single PDF document
 
 ### Smart Features
