@@ -87,13 +87,13 @@ def display_pdf(pdf_buffer: BytesIO, filename: str = "class_notes.pdf"):
         """, unsafe_allow_html=True)
         
         try:
-            # This works perfectly on Streamlit Cloud and locally
-            # Increased width to show full document width
+            # Use optimal settings to show full page width properly
+            # rendering="legacy_embed" provides better zoom control
             pdf_viewer(
                 input=pdf_bytes,
-                width=900,  # Wider to show full page
-                height=1000,  # Taller for better viewing
-                rendering="unwrap",  # Better rendering
+                width=900,  # Container width
+                height=1000,  # Container height
+                rendering="legacy_embed",  # Better zoom control than "unwrap"
                 key=f"pdf_viewer_{id(pdf_buffer)}"  # Unique key
             )
         except Exception as e:
