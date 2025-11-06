@@ -68,7 +68,7 @@ def initialize_session_state():
 
 
 def display_pdf(pdf_buffer: BytesIO, filename: str = "class_notes.pdf"):
-    """Display PDF using streamlit-pdf-viewer - Works on Streamlit Cloud!"""
+    """Display PDF using streamlit-pdf-viewer with full interactive controls!"""
     if pdf_buffer:
         pdf_buffer.seek(0)
         pdf_bytes = pdf_buffer.read()
@@ -86,20 +86,95 @@ def display_pdf(pdf_buffer: BytesIO, filename: str = "class_notes.pdf"):
             </style>
         """, unsafe_allow_html=True)
         
+        # PDF Viewer Controls in an expander
+        with st.expander("🎛️ PDF Viewer Controls", expanded=True):
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                # Zoom control
+                zoom_options = {
+                    "Fit to Width (Auto)": "auto",
+                    "Fit to Height": "auto-height",
+                    "50%": 0.5,
+                    "75%": 0.75,
+                    "100%": 1.0,
+                    "125%": 1.25,
+                    "150%": 1.5,
+                    "200%": 2.0,
+                    "300%": 3.0
+                }
+                zoom_selection = st.selectbox(
+                    "🔍 Zoom Level",
+                    options=list(zoom_options.keys()),
+                    index=0,
+                    help="Select zoom level for PDF viewing"
+                )
+                zoom_level = zoom_options[zoom_selection]
+            
+            with col2:
+                # Viewer alignment
+                align_options = {
+                    "Center": "center",
+                    "Left": "left",
+                    "Right": "right"
+                }
+                align_selection = st.selectbox(
+                    "📐 Alignment",
+                    options=list(align_options.keys()),
+                    index=0,
+                    help="Align PDF viewer in container"
+                )
+                viewer_align = align_options[align_selection]
+            
+            with col3:
+                # Page separator toggle
+                show_separator = st.checkbox(
+                    "📄 Page Separators",
+                    value=True,
+                    help="Show lines between pages"
+                )
+            
+            col4, col5 = st.columns(2)
+            
+            with col4:
+                # Viewer height
+                viewer_height = st.slider(
+                    "📏 Viewer Height (px)",
+                    min_value=400,
+                    max_value=1200,
+                    value=800,
+                    step=50,
+                    help="Set the height of the PDF viewer"
+                )
+            
+            with col5:
+                # Page spacing
+                page_spacing = st.slider(
+                    "📐 Page Spacing (px)",
+                    min_value=0,
+                    max_value=20,
+                    value=2,
+                    step=1,
+                    help="Vertical space between pages"
+                )
+        
         try:
-            # Official streamlit-pdf-viewer configuration for optimal display
-            # Using recommended parameters from official documentation
+            # Full-featured PDF viewer with all controls
             pdf_viewer(
                 input=pdf_bytes,
-                width=700,  # Standard width in pixels (can also use percentage like "90%")
-                # No height parameter = shows whole content automatically
-                zoom_level="auto",  # Auto-fit to width for full page visibility
-                viewer_align="center",  # Center alignment in container
-                show_page_separator=True,  # Visual separator between pages
-                pages_vertical_spacing=2,  # Space between pages in pixels
+                width=700,  # Standard width for optimal display
+                height=viewer_height,  # Controlled height for single page viewing with scrolling
+                zoom_level=zoom_level,  # User-controlled zoom
+                viewer_align=viewer_align,  # User-controlled alignment
+                show_page_separator=show_separator,  # User-controlled separators
+                pages_vertical_spacing=page_spacing,  # User-controlled spacing
                 render_text=True,  # Enable text selection and copy-paste
                 key=f"pdf_viewer_{id(pdf_buffer)}"  # Unique key for component
             )
+            
+            # Info about viewer features
+            st.info("💡 **PDF Viewer Features**: Scroll vertically/horizontally • Select & copy text • Adjust zoom above • Control height & spacing")
+            
         except Exception as e:
             st.warning(f"PDF viewer unavailable: {str(e)}")
             st.info("💡 Use the download button below to view your PDF.")
