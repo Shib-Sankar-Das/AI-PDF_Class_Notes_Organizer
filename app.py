@@ -73,9 +73,6 @@ def display_pdf(pdf_buffer: BytesIO, filename: str = "class_notes.pdf"):
         pdf_buffer.seek(0)
         pdf_bytes = pdf_buffer.read()
         
-        # Use streamlit-pdf-viewer for reliable display on Streamlit Cloud
-        st.subheader("📄 PDF Preview")
-        
         # Add custom CSS for PDF viewer border and styling
         st.markdown("""
             <style>
