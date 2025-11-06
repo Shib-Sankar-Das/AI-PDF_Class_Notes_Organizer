@@ -87,15 +87,18 @@ def display_pdf(pdf_buffer: BytesIO, filename: str = "class_notes.pdf"):
         """, unsafe_allow_html=True)
         
         try:
-            # Use modern stable rendering with proper aspect ratio
-            # A4 page aspect ratio is approximately 1:1.414 (width:height)
-            # Setting width to match container and letting height be proportional
+            # Official streamlit-pdf-viewer configuration for optimal display
+            # Using recommended parameters from official documentation
             pdf_viewer(
                 input=pdf_bytes,
-                width=700,  # Standard width that fits well in Streamlit
-                pages_vertical_spacing=2,  # Space between pages
-                render_text=True,  # Enable text rendering for better quality
-                key=f"pdf_viewer_{id(pdf_buffer)}"  # Unique key
+                width=700,  # Standard width in pixels (can also use percentage like "90%")
+                # No height parameter = shows whole content automatically
+                zoom_level="auto",  # Auto-fit to width for full page visibility
+                viewer_align="center",  # Center alignment in container
+                show_page_separator=True,  # Visual separator between pages
+                pages_vertical_spacing=2,  # Space between pages in pixels
+                render_text=True,  # Enable text selection and copy-paste
+                key=f"pdf_viewer_{id(pdf_buffer)}"  # Unique key for component
             )
         except Exception as e:
             st.warning(f"PDF viewer unavailable: {str(e)}")
