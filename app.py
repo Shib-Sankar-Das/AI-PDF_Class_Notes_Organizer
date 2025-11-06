@@ -66,17 +66,41 @@ def initialize_session_state():
             st.session_state.agent = None
 
 
-def display_pdf(pdf_buffer: BytesIO):
-    """Display PDF in the viewer"""
+def display_pdf(pdf_buffer: BytesIO, filename: str = "class_notes.pdf"):
+    """Display PDF in the viewer - Chrome-compatible for Streamlit Cloud"""
     if pdf_buffer:
         pdf_buffer.seek(0)
-        base64_pdf = base64.b64encode(pdf_buffer.read()).decode('utf-8')
-        pdf_display = f'''
-            <iframe src="data:application/pdf;base64,{base64_pdf}" 
-                    width="100%" height="800" type="application/pdf">
-            </iframe>
-        '''
-        st.markdown(pdf_display, unsafe_allow_html=True)
+        pdf_bytes = pdf_buffer.read()
+        
+        # Prominent download button (works reliably on all platforms)
+        st.download_button(
+            label="📥 Download PDF",
+            data=pdf_bytes,
+            file_name=filename,
+            mime="application/pdf",
+            type="primary",
+            use_container_width=True,
+            help="Download to view the complete PDF document"
+        )
+        
+        st.info("💡 **Note**: PDF preview may not work on some browsers when deployed. Use the download button above to view your PDF.")
+        
+        # Try to display preview for browsers that support it (works locally)
+        try:
+            base64_pdf = base64.b64encode(pdf_bytes).decode('utf-8')
+            # Use embed tag instead of iframe - better compatibility
+            pdf_display = f'''
+                <div style="margin-top: 20px;">
+                    <embed src="data:application/pdf;base64,{base64_pdf}" 
+                           width="100%" height="800px" type="application/pdf"
+                           style="border: 2px solid #e0e0e0; border-radius: 10px;">
+                </div>
+            '''
+            st.markdown(pdf_display, unsafe_allow_html=True)
+        except Exception:
+            pass  # Silently fail if preview doesn't work
+
+
 
 
 def main():
@@ -286,17 +310,9 @@ def main():
         st.subheader("📑 PDF Viewer")
         
         if st.session_state.pdf_buffer:
-            # Display PDF
-            display_pdf(st.session_state.pdf_buffer)
-            
-            # Download button
-            st.session_state.pdf_buffer.seek(0)
-            st.download_button(
-                label="⬇️ Download PDF",
-                data=st.session_state.pdf_buffer,
-                file_name=f"{st.session_state.pdf_title.replace(' ', '_')}.pdf",
-                mime="application/pdf"
-            )
+            # Display PDF with download option
+            pdf_filename = f"{st.session_state.pdf_title.replace(' ', '_')}.pdf" if st.session_state.pdf_title else "class_notes.pdf"
+            display_pdf(st.session_state.pdf_buffer, pdf_filename)
             
             # Add More Notes Button
             st.markdown("---")
