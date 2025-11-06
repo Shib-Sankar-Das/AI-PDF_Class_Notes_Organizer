@@ -150,34 +150,29 @@ def display_pdf(pdf_buffer: BytesIO, filename: str = "class_notes.pdf"):
                     help="Percentage of available container width"
                 )
                 width = str(width) + "%"
-                height = -1  # Auto height for percentage mode (responsive)
+                
+                height = st.slider(
+                    label="PDF height (%)", 
+                    min_value=50, 
+                    max_value=100, 
+                    value=80,  # 80% of viewport height (responsive)
+                    help="Percentage of available viewport height"
+                )
+                height = str(height) + "%"
         
         try:
             # Professional PDF viewer implementation (structure-vision style)
             with st.spinner("Rendering PDF document..."):
-                if size_in_pixel and height > -1:
-                    # Fixed height mode - good for single page viewing
-                    pdf_viewer(
-                        input=pdf_bytes,
-                        width=width,
-                        height=height,
-                        pages_vertical_spacing=pages_vertical_spacing,
-                        annotation_outline_size=annotation_thickness,
-                        render_text=enable_text,
-                        resolution_boost=resolution_boost,
-                        key=f"pdf_viewer_{id(pdf_buffer)}"
-                    )
-                else:
-                    # Auto height mode - shows all pages
-                    pdf_viewer(
-                        input=pdf_bytes,
-                        width=width,
-                        pages_vertical_spacing=pages_vertical_spacing,
-                        annotation_outline_size=annotation_thickness,
-                        render_text=enable_text,
-                        resolution_boost=resolution_boost,
-                        key=f"pdf_viewer_{id(pdf_buffer)}"
-                    )
+                pdf_viewer(
+                    input=pdf_bytes,
+                    width=width,
+                    height=height,
+                    pages_vertical_spacing=pages_vertical_spacing,
+                    annotation_outline_size=annotation_thickness,
+                    render_text=enable_text,
+                    resolution_boost=resolution_boost,
+                    key=f"pdf_viewer_{id(pdf_buffer)}"
+                )
             
             # Feature info
             st.info("💡 **PDF Viewer**: Scroll to navigate • Select & copy text (if enabled) • Adjust settings in controls above")
