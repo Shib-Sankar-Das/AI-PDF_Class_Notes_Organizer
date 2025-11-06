@@ -123,33 +123,34 @@ def display_pdf(pdf_buffer: BytesIO, filename: str = "class_notes.pdf"):
             
             size_in_pixel = st.toggle(
                 'Size in pixels', 
-                value=True,
-                help="Use pixel-based sizing (recommended)"
+                value=False,  # Default to percentage (responsive)
+                help="Use pixel-based sizing or percentage (responsive)"
             )
             
             if size_in_pixel:
                 width = st.slider(
-                    label="PDF width", 
+                    label="PDF width (px)", 
                     min_value=100, 
                     max_value=1000, 
                     value=450
                 )
                 height = st.slider(
-                    label="PDF height", 
+                    label="PDF height (px)", 
                     min_value=-1, 
                     max_value=10000, 
-                    value=550,
+                    value=530,
                     help="Set to -1 for auto height (shows all pages)"
                 )
             else:
                 width = st.slider(
                     label="PDF width (%)", 
-                    min_value=10, 
+                    min_value=50, 
                     max_value=100, 
-                    value=100
+                    value=95,  # 95% of container width (responsive)
+                    help="Percentage of available container width"
                 )
                 width = str(width) + "%"
-                height = -1  # Auto height for percentage mode
+                height = -1  # Auto height for percentage mode (responsive)
         
         try:
             # Professional PDF viewer implementation (structure-vision style)
