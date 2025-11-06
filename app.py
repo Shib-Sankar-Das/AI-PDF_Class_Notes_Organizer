@@ -76,12 +76,26 @@ def display_pdf(pdf_buffer: BytesIO, filename: str = "class_notes.pdf"):
         # Use streamlit-pdf-viewer for reliable display on Streamlit Cloud
         st.subheader("📄 PDF Preview")
         
+        # Add custom CSS for PDF viewer border and styling
+        st.markdown("""
+            <style>
+            /* Style the PDF viewer container */
+            iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"] {
+                border: 2px solid #e0e0e0;
+                border-radius: 8px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                margin: 10px 0;
+            }
+            </style>
+        """, unsafe_allow_html=True)
+        
         try:
             # This works perfectly on Streamlit Cloud and locally
+            # Increased width to show full document width
             pdf_viewer(
                 input=pdf_bytes,
-                width=700,
-                height=800,
+                width=900,  # Wider to show full page
+                height=1000,  # Taller for better viewing
                 rendering="unwrap",  # Better rendering
                 key=f"pdf_viewer_{id(pdf_buffer)}"  # Unique key
             )
