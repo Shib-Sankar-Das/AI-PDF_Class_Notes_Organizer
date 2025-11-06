@@ -65,26 +65,10 @@ def initialize_session_state():
             st.session_state.agent = NoteOrganizerAgent(api_key)
         else:
             st.session_state.agent = None
-    
-    # PDF Viewer settings (structure-vision style)
-    if 'pdf_enable_text' not in st.session_state:
-        st.session_state.pdf_enable_text = True
-    if 'pdf_annotation_thickness' not in st.session_state:
-        st.session_state.pdf_annotation_thickness = 1
-    if 'pdf_pages_spacing' not in st.session_state:
-        st.session_state.pdf_pages_spacing = 2
-    if 'pdf_resolution_boost' not in st.session_state:
-        st.session_state.pdf_resolution_boost = 1
-    if 'pdf_size_in_pixel' not in st.session_state:
-        st.session_state.pdf_size_in_pixel = True
-    if 'pdf_width' not in st.session_state:
-        st.session_state.pdf_width = 700
-    if 'pdf_height' not in st.session_state:
-        st.session_state.pdf_height = 1000
 
 
 def display_pdf(pdf_buffer: BytesIO, filename: str = "class_notes.pdf"):
-    """Display PDF using streamlit-pdf-viewer - Structure-vision style (controls in sidebar)"""
+    """Display PDF using streamlit-pdf-viewer with professional controls - Based on structure-vision implementation"""
     if pdf_buffer:
         pdf_buffer.seek(0)
         pdf_bytes = pdf_buffer.read()
@@ -102,29 +86,84 @@ def display_pdf(pdf_buffer: BytesIO, filename: str = "class_notes.pdf"):
             </style>
         """, unsafe_allow_html=True)
         
+        # PDF Viewer Controls - Professional Implementation
+        with st.expander("🎛️ PDF Viewer Controls", expanded=False):
+            st.markdown("### Display Settings")
+            
+            # Text rendering toggle
+            enable_text = st.toggle(
+                'Render text in PDF', 
+                value=True,
+                help="Enable the selection and copy-paste on the PDF"
+            )
+            
+            st.markdown("### Annotations")
+            annotation_thickness = st.slider(
+                label="Annotation boxes border thickness", 
+                min_value=1, 
+                max_value=6, 
+                value=1
+            )
+            
+            pages_vertical_spacing = st.slider(
+                label="Pages vertical spacing", 
+                min_value=0, 
+                max_value=10, 
+                value=2
+            )
+            
+            st.markdown("### Height and Width")
+            resolution_boost = st.slider(
+                label="Resolution boost", 
+                min_value=1, 
+                max_value=10, 
+                value=1,
+                help="Higher values increase PDF rendering quality"
+            )
+            
+            size_in_pixel = st.toggle(
+                'Size in pixels', 
+                value=True,
+                help="Use pixel-based sizing (recommended)"
+            )
+            
+            if size_in_pixel:
+                width = st.slider(
+                    label="PDF width", 
+                    min_value=100, 
+                    max_value=1000, 
+                    value=450
+                )
+                height = st.slider(
+                    label="PDF height", 
+                    min_value=-1, 
+                    max_value=10000, 
+                    value=550,
+                    help="Set to -1 for auto height (shows all pages)"
+                )
+            else:
+                width = st.slider(
+                    label="PDF width (%)", 
+                    min_value=10, 
+                    max_value=100, 
+                    value=100
+                )
+                width = str(width) + "%"
+                height = -1  # Auto height for percentage mode
+        
         try:
             # Professional PDF viewer implementation (structure-vision style)
-            # Controls are in sidebar, viewer here
             with st.spinner("Rendering PDF document..."):
-                # Get settings from session state
-                width = st.session_state.pdf_width
-                height = st.session_state.pdf_height
-                size_in_pixel = st.session_state.pdf_size_in_pixel
-                
-                # Convert width to percentage if needed
-                if not size_in_pixel:
-                    width = str(width) + "%"
-                
                 if size_in_pixel and height > -1:
                     # Fixed height mode - good for single page viewing
                     pdf_viewer(
                         input=pdf_bytes,
                         width=width,
                         height=height,
-                        pages_vertical_spacing=st.session_state.pdf_pages_spacing,
-                        annotation_outline_size=st.session_state.pdf_annotation_thickness,
-                        render_text=st.session_state.pdf_enable_text,
-                        resolution_boost=st.session_state.pdf_resolution_boost,
+                        pages_vertical_spacing=pages_vertical_spacing,
+                        annotation_outline_size=annotation_thickness,
+                        render_text=enable_text,
+                        resolution_boost=resolution_boost,
                         key=f"pdf_viewer_{id(pdf_buffer)}"
                     )
                 else:
@@ -132,12 +171,15 @@ def display_pdf(pdf_buffer: BytesIO, filename: str = "class_notes.pdf"):
                     pdf_viewer(
                         input=pdf_bytes,
                         width=width,
-                        pages_vertical_spacing=st.session_state.pdf_pages_spacing,
-                        annotation_outline_size=st.session_state.pdf_annotation_thickness,
-                        render_text=st.session_state.pdf_enable_text,
-                        resolution_boost=st.session_state.pdf_resolution_boost,
+                        pages_vertical_spacing=pages_vertical_spacing,
+                        annotation_outline_size=annotation_thickness,
+                        render_text=enable_text,
+                        resolution_boost=resolution_boost,
                         key=f"pdf_viewer_{id(pdf_buffer)}"
                     )
+            
+            # Feature info
+            st.info("💡 **PDF Viewer**: Scroll to navigate • Select & copy text (if enabled) • Adjust settings in controls above")
             
         except Exception as e:
             st.warning(f"PDF viewer unavailable: {str(e)}")
@@ -161,7 +203,7 @@ def main():
     """Main application"""
     initialize_session_state()
     
-    # Sidebar - Interface Selector and PDF Controls
+    # Sidebar - Interface Selector Only
     with st.sidebar:
         st.header("⚙️ Interface")
         
@@ -187,72 +229,6 @@ def main():
                     st.session_state.pdf_title = ""
                     st.session_state.show_editor = False
                     st.rerun()
-            
-            # PDF Viewer Controls (structure-vision style)
-            if st.session_state.pdf_buffer:
-                st.markdown("---")
-                st.header("📄 PDF Viewer Settings")
-                
-                # Text rendering
-                st.session_state.pdf_enable_text = st.toggle(
-                    'Render text in PDF', 
-                    value=st.session_state.pdf_enable_text,
-                    help="Enable text selection and copy-paste"
-                )
-                
-                # Annotations section
-                st.subheader("Annotations")
-                st.session_state.pdf_annotation_thickness = st.slider(
-                    label="Border thickness", 
-                    min_value=1, 
-                    max_value=6, 
-                    value=st.session_state.pdf_annotation_thickness
-                )
-                
-                st.session_state.pdf_pages_spacing = st.slider(
-                    label="Pages spacing", 
-                    min_value=0, 
-                    max_value=10, 
-                    value=st.session_state.pdf_pages_spacing
-                )
-                
-                # Height and Width section
-                st.subheader("Height and Width")
-                st.session_state.pdf_resolution_boost = st.slider(
-                    label="Resolution boost", 
-                    min_value=1, 
-                    max_value=10, 
-                    value=st.session_state.pdf_resolution_boost,
-                    help="Higher = better quality"
-                )
-                
-                st.session_state.pdf_size_in_pixel = st.toggle(
-                    'Size in pixels', 
-                    value=st.session_state.pdf_size_in_pixel,
-                    help="Pixel or percentage mode"
-                )
-                
-                if st.session_state.pdf_size_in_pixel:
-                    st.session_state.pdf_width = st.slider(
-                        label="PDF width", 
-                        min_value=100, 
-                        max_value=1000, 
-                        value=st.session_state.pdf_width
-                    )
-                    st.session_state.pdf_height = st.slider(
-                        label="PDF height", 
-                        min_value=-1, 
-                        max_value=10000, 
-                        value=st.session_state.pdf_height,
-                        help="-1 for auto height"
-                    )
-                else:
-                    st.session_state.pdf_width = st.slider(
-                        label="PDF width (%)", 
-                        min_value=10, 
-                        max_value=100, 
-                        value=st.session_state.pdf_width if st.session_state.pdf_width <= 100 else 100
-                    )
     
     # Main content area - conditional based on interface mode
     if interface_mode == "📖 Help & Guidelines":
