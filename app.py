@@ -83,6 +83,40 @@ def main():
     """Main application"""
     initialize_session_state()
     
+    # Sidebar - Interface Selector Only
+    with st.sidebar:
+        st.header("⚙️ Interface")
+        
+        # Interface selector dropdown
+        interface_mode = st.selectbox(
+            "Select View:",
+            ["📝 Create Notes", "📖 Help & Guidelines"],
+            index=0,
+            key="main_interface_selector"
+        )
+        
+        st.markdown("---")
+        
+        # Show quick stats only for Create Notes mode
+        if interface_mode == "📝 Create Notes":
+            if st.session_state.notes_collection:
+                st.metric("📊 Topics Added", len(st.session_state.notes_collection))
+                
+                if st.button("🔄 Start New Document"):
+                    st.session_state.notes_collection = []
+                    st.session_state.current_markdown = ""
+                    st.session_state.pdf_buffer = None
+                    st.session_state.pdf_title = ""
+                    st.session_state.show_editor = False
+                    st.rerun()
+    
+    # Main content area - conditional based on interface mode
+    if interface_mode == "📖 Help & Guidelines":
+        # Show Help & Guidelines Interface
+        show_help_interface()
+        return
+    
+    # Otherwise show Create Notes Interface
     st.markdown('<h1 class="main-header">📚 Class Note Organizer</h1>', 
                 unsafe_allow_html=True)
     
@@ -285,78 +319,566 @@ def main():
                     </p>
                 </div>
             """, unsafe_allow_html=True)
+
+
+def show_help_interface():
+    """Display Help & Guidelines interface in main content area"""
+    st.markdown('<h1 class="main-header">📖 Help & Guidelines</h1>', 
+                unsafe_allow_html=True)
     
-    # Sidebar with instructions
-    with st.sidebar:
-        st.header("📖 How to Use")
+    st.markdown("""
+    Welcome to the **Class Note Organizer** help center! This guide will help you understand 
+    all features and get the most out of this tool.
+    """)
+    
+    # Create tabs for better organization
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
+        "🎯 How to Use",
+        "🤖 AI Capabilities", 
+        "📝 Markdown Syntax",
+        "✏️ Text Editor",
+        "⚠️ Rate Limits",
+        "💡 Best Practices",
+        "🔧 Troubleshooting",
+        "📚 Examples"
+    ])
+    
+    with tab1:
+        st.header("🎯 How to Use")
         st.markdown("""
-        1. **Enter PDF Title**: Main document title (largest font)
-        2. **Enter Topic Title**: Title for this section
-        3. **Paste Content**: Add your class notes
-        4. **(Optional)** Add custom modifications in the prompt box
-        5. **Generate**: Click to process and organize notes
-        6. **Edit** (Optional): Use the text editor to modify output
-        7. **Generate PDF**: Create PDF from the formatted notes
-        8. **Add More**: Click "Add Another Topic" to append more content
+        ### Step-by-Step Process
         
-        ---
+        #### 1. **PDF Title** - Enter the main document title
+        - Appears on the first page
+        - Uses the largest font size
+        - Example: *"Biology Class Notes"* or *"Physics Semester 1"*
         
-        ### 🎯 Features
-        - ✨ AI-powered note organization
-        - 📝 Markdown formatting
-        - ✏️ Built-in text editor
-        - 📄 PDF generation & preview
-        - ➕ Multi-topic support
-        - ⬇️ Download functionality
+        #### 2. **Topic Title** - Enter section title
+        - For each topic/chapter you want to add
+        - Example: *"Cell Biology"* or *"Newton's Laws"*
         
-        ---
+        #### 3. **Content** - Paste your notes
+        - Copy from any source (Word, Google Docs, web pages, etc.)
+        - Can include headings, lists, paragraphs
+        - Keep natural formatting
         
-        ### 🤖 AI Capabilities
-        The AI automatically:
-        - **Bolds** important keywords (sparingly)
-        - Identifies **headings** (with : or -)
-        - Preserves **bullets** & **numbering** (only if they exist)
-        - Keeps **paragraphs** as paragraphs (no unwanted lists)
-        - Manages **spacing** & **font sizes**
-        - Maintains **original structure** (unless custom prompt provided)
+        #### 4. **Generate** - Click to process
+        - AI analyzes and organizes content
+        - Creates formatted markdown
+        - Preserves your original structure
         
-        **Special Note:**
-        - If your content has only paragraphs, they stay as paragraphs
-        - Lists are created only where they already exist
-        - Natural text flow is preserved
+        #### 5. **Edit** (Optional) - Refine output
+        - Use the text editor to make manual changes
+        - Modify formatting, add/remove sections
+        - Complete markdown control
         
-        ---
+        #### 6. **Generate PDF** - Create document
+        - Professional formatting applied
+        - Preview appears in right panel
+        - Hierarchical font sizing
         
-        ### ⚠️ API Rate Limits
-        **Free Tier**: 50 requests/day
+        #### 7. **Add More** - Append topics
+        - Add multiple sections to the same document
+        - Each with its own topic title
+        - All combined in one PDF
         
-        If you exceed the limit:
-        - ✅ **Fallback mode** activates automatically
-        - 📝 Basic formatting still works
-        - ✏️ Text editor available for refinement
-        - 📄 PDF generation unaffected
+        #### 8. **Download** - Save your work
+        - Download button appears after PDF generation
+        - Save to your computer
+        - Ready to print or share
+        """)
+    
+    with tab2:
+        st.header("🤖 AI Capabilities")
         
-        **Options**:
-        - Wait 24 hours for quota reset
-        - Upgrade to paid tier
-        - Use fallback + manual editing
+        col1, col2 = st.columns(2)
         
-        [Monitor Usage](https://ai.dev/usage?tab=rate-limit) | 
-        [Rate Limits Info](https://ai.google.dev/gemini-api/docs/rate-limits)
+        with col1:
+            st.subheader("✨ What AI Does Automatically")
+            st.markdown("""
+            - **Identifies Keywords**: Bolds important terms in CAPS
+            - **Detects Headings**: Recognizes headings with `:` or `-`
+            - **Preserves Lists**: Keeps numbered and bullet lists intact
+            - **Maintains Paragraphs**: Keeps paragraph flow natural
+            - **Manages Spacing**: Appropriate spacing between sections
+            - **Font Sizing**: Hierarchical sizing (Title → H1 → H2 → H3)
+            - **Structure**: Maintains your original organization
+            """)
+        
+        with col2:
+            st.subheader("🎯 Special Behaviors")
+            st.markdown("""
+            - **Paragraph-Only Content**: Stays as paragraphs, never converted to lists
+            - **List Detection**: Lists preserved only where they exist
+            - **No Hallucination**: Never adds information not in original
+            - **Structure Respect**: No unwanted transformations
+            - **Natural Flow**: Text reads naturally, not artificially formatted
+            """)
+        
+        st.markdown("---")
+        st.subheader("📜 Strict Rules AI Follows")
+        st.info("""
+        🚫 **What AI Will NOT Do:**
+        - Does NOT add new information
+        - Does NOT modify original content meaning
+        - Does NOT create fake lists from paragraphs
+        - Does NOT change your intended structure
+        - ONLY enhances and organizes existing content
+        """)
+    
+    with tab3:
+        st.header("📝 Markdown Syntax Guide")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("Text Formatting")
+            st.code("""
+**Bold Text**        → Bold Text
+*Italic Text*        → Italic Text  
+***Bold Italic***    → Bold Italic
+`Code Text`          → Code Text
+            """, language="markdown")
+            
+            st.subheader("Headings")
+            st.code("""
+# Heading 1          → Largest (16pt)
+## Heading 2         → Large (14pt)
+### Heading 3        → Medium (12pt)
+#### Heading 4       → Small (11pt)
+            """, language="markdown")
+        
+        with col2:
+            st.subheader("Lists")
+            st.code("""
+Bullet List:
+- Item 1
+- Item 2
+  - Sub-item 2.1
+  - Sub-item 2.2
+
+Numbered List:
+1. First item
+2. Second item
+3. Third item
+            """, language="markdown")
+            
+            st.subheader("Links & Images")
+            st.code("""
+[Link Text](URL)     → Clickable link
+![Alt Text](URL)     → Embedded image
+            """, language="markdown")
+        
+        st.markdown("---")
+        st.subheader("Line Breaks & Paragraphs")
+        st.code("""
+Two spaces at end  
+creates line break
+
+Blank line between text
+
+creates new paragraph
+        """, language="markdown")
+    
+    with tab4:
+        st.header("✏️ Text Editor Tips")
+        
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+            st.subheader("📖 How to Use the Editor")
+            st.markdown("""
+            1. **Open Editor**: Click "Open Text Editor" button
+            2. **Edit Content**: Modify markdown directly in text area
+            3. **Use Syntax**: Apply markdown formatting (see Syntax tab)
+            4. **Preview**: Check output in markdown preview
+            5. **Save**: Click "Save Changes" when satisfied
+            6. **Cancel**: Discard changes if needed
+            """)
+            
+            st.subheader("⚡ Pro Tips")
+            st.markdown("""
+            - **Test incrementally**: Make small changes and save
+            - **Use preview**: Always check before generating PDF
+            - **Keep clean**: Maintain proper markdown syntax
+            - **Save frequently**: Changes only persist when saved
+            - **Backup**: Copy content before major edits
+            """)
+        
+        with col2:
+            st.subheader("🔧 Common Edits")
+            st.markdown("""
+            **Make text bold:**
+            ```markdown
+            **your text here**
+            ```
+            
+            **Change heading size:**
+            ```markdown
+            # Largest
+            ## Large  
+            ### Medium
+            #### Small
+            ```
+            
+            **Convert to list:**
+            ```markdown
+            - Bullet item
+            1. Numbered item
+            ```
+            
+            **Add spacing:**
+            ```markdown
+            Insert blank lines
+            
+            between paragraphs
+            ```
+            
+            **Fix formatting:**
+            - Check for missing symbols
+            - Balance opening/closing marks
+            - Verify proper spacing
+            """)
+    
+    with tab5:
+        st.header("⚠️ API Rate Limits")
+        
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+            st.subheader("📊 Free Tier Limits")
+            st.markdown("""
+            - **50 requests per day** on free Google Gemini API
+            - **Resets**: Every 24 hours automatically
+            - **Monitor**: [AI Studio Usage Dashboard](https://aistudio.google.com/app/apikey)
+            - **Tracking**: Check your usage anytime
+            """)
+            
+            st.subheader("🔄 When Quota Exceeded")
+            st.success("""
+            **✅ Fallback Mode (Automatic)**
+            
+            The app automatically switches to rule-based processing:
+            - Basic formatting still works
+            - No API calls needed
+            - Unlimited processing
+            - All features remain functional
+            """)
+        
+        with col2:
+            st.subheader("📝 What Still Works in Fallback")
+            st.markdown("""
+            ✅ **Full Functionality:**
+            - Note processing and organization
+            - Markdown generation (rule-based)
+            - Text editor with full control
+            - PDF generation and preview
+            - Multi-topic support
+            - Download capabilities
+            
+            ⚡ **Performance:**
+            - Actually faster (no API wait time)
+            - No rate limiting
+            - Completely offline-capable
+            """)
+            
+            st.subheader("🎯 Your Options")
+            st.markdown("""
+            1. **Wait** - Free, quota resets in 24 hours
+            2. **Use Fallback** - Free, works immediately
+            3. **Upgrade API** - Paid plans with higher limits
+            4. **Manual Edit** - Free, use text editor for refinements
+            
+            📚 [Rate Limit Documentation](https://ai.google.dev/gemini-api/docs/rate-limits)
+            """)
+    
+    with tab6:
+        st.header("💡 Best Practices")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("📝 Content Formatting Tips")
+            st.markdown("""
+            **For Best AI Detection:**
+            - Use **colons (`:`)** after headings
+            - Use **dashes (`-`)** for bullet points
+            - Number lists: `1.`, `2.`, `3.`
+            - **CAPITALIZE** important terms
+            - Add **blank lines** between sections
+            
+            **Example:**
+            ```
+            Introduction:
+            This is the main content.
+            
+            Key Points:
+            - First point
+            - Second point
+            ```
+            """)
+            
+            st.subheader("📄 Paragraph Content")
+            st.markdown("""
+            - Keep **natural paragraph flow**
+            - Don't force list format
+            - Let AI detect structure
+            - Edit manually if AI misinterprets
+            - Preserve narrative text as-is
+            """)
+        
+        with col2:
+            st.subheader("🎨 Mixed Content Strategy")
+            st.markdown("""
+            - **Paragraphs**: For explanations and narratives
+            - **Lists**: For key points and summaries
+            - **Headings**: For section organization
+            - **Blank lines**: For visual spacing
+            - **Bold**: For emphasis on keywords
+            """)
+            
+            st.subheader("🔧 Using Custom Prompts")
+            st.markdown("""
+            **When to use:**
+            - Need specific modifications
+            - Want different tone
+            - Require special formatting
+            
+            **How to use:**
+            - Be specific and clear
+            - One request at a time
+            - Examples: 
+              - *"Make it more concise"*
+              - *"Add more structure"*
+              - *"Emphasize key terms"*
+            
+            **Tip**: Only use when default processing isn't sufficient
+            """)
+            
+            st.subheader("📚 Multiple Topics Workflow")
+            st.markdown("""
+            1. Process one topic at a time
+            2. Review output before continuing
+            3. Edit if needed using text editor
+            4. Generate PDF to add to document
+            5. Repeat for additional topics
+            6. Build complete comprehensive document
+            """)
+    
+    with tab7:
+        st.header("🔧 Troubleshooting")
+        
+        # Problem 1
+        st.subheader("❌ Problem: API key not working")
+        st.markdown("""
+        **Solution:** Check `.streamlit/secrets.toml` configuration
+        
+        - Verify key is correct and active
+        - No extra spaces or quotes
+        - File in correct location: `.streamlit/secrets.toml`
+        - Format: `GEMINI_API_KEY = "your-key-here"`
+        
+        📝 For Streamlit Cloud: Add in App Settings > Secrets
         """)
         
-        # Show notes count
-        if st.session_state.notes_collection:
-            st.markdown("---")
-            st.metric("Topics Added", len(st.session_state.notes_collection))
-            
-            if st.button("🔄 Start New Document"):
-                st.session_state.notes_collection = []
-                st.session_state.current_markdown = ""
-                st.session_state.pdf_buffer = None
-                st.session_state.pdf_title = ""
-                st.session_state.show_editor = False
-                st.rerun()
+        st.markdown("---")
+        
+        # Problem 2
+        st.subheader("⚠️ Problem: Rate limit error (429)")
+        st.markdown("""
+        **Solution:** App automatically uses fallback mode
+        
+        - Continues processing automatically
+        - Still generates quality output
+        - Edit manually for refinements
+        - Wait 24 hours for quota reset
+        - Consider upgrading API plan
+        """)
+        
+        st.markdown("---")
+        
+        # Problem 3
+        st.subheader("📄 Problem: PDF not generating")
+        st.markdown("""
+        **Solution:** Check markdown for errors
+        
+        1. Look for syntax errors in markdown
+        2. Fix any malformed formatting
+        3. Use text editor to correct issues
+        4. Ensure headings are properly formatted
+        5. Remove any problematic characters
+        6. Try regenerating PDF
+        """)
+        
+        st.markdown("---")
+        
+        # Problem 4
+        st.subheader("🎨 Problem: Formatting wrong or unexpected")
+        st.markdown("""
+        **Solution:** Use text editor for manual corrections
+        
+        1. Click "Open Text Editor"
+        2. Make manual corrections
+        3. Check markdown syntax guide (tab 3)
+        4. Fix formatting issues
+        5. Save changes
+        6. Regenerate PDF
+        
+        **Common fixes:**
+        - Add/remove `#` for heading sizes
+        - Add `**` around text for bold
+        - Add `-` before items for lists
+        - Add blank lines for spacing
+        """)
+        
+        st.markdown("---")
+        
+        # Problem 5
+        st.subheader("💾 Problem: Lost progress or changes")
+        st.markdown("""
+        **Solution:** Follow these practices
+        
+        ⚠️ **Important:**
+        - Don't refresh the page
+        - Use "Add Topic" button for multi-topic docs
+        - Download PDFs immediately after generation
+        - No auto-save feature (by design)
+        - Session clears on page refresh
+        
+        💡 **Best practice:**
+        - Complete one topic at a time
+        - Generate and download PDF for each section
+        - Keep local backups of important content
+        """)
+    
+    with tab8:
+        st.header("📚 Examples")
+        
+        st.markdown("""
+        Here are some example inputs to help you understand the best way to format your notes.
+        """)
+        
+        # Example 1
+        st.subheader("📌 Example 1: Simple Notes with Lists")
+        
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+            st.markdown("**Input:**")
+            st.code("""
+Introduction:
+This is the main topic explanation 
+covering the basics.
+
+Key Points:
+- First important point
+- Second important point
+- Third important point
+            """, language="text")
+        
+        with col2:
+            st.markdown("**Output:**")
+            st.markdown("""
+**Introduction:**
+This is the main topic explanation covering the basics.
+
+**Key Points:**
+- First important point
+- Second important point
+- Third important point
+            """)
+        
+        st.markdown("---")
+        
+        # Example 2
+        st.subheader("📌 Example 2: Detailed Content with Structure")
+        
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+            st.markdown("**Input:**")
+            st.code("""
+Cell Biology:
+
+Cells are the basic units of life. 
+They contain genetic material and 
+organelles that perform various 
+functions.
+
+Cell Types:
+1. Prokaryotic cells
+2. Eukaryotic cells
+
+These cells have distinct structures 
+and functions including energy 
+production and protein synthesis.
+            """, language="text")
+        
+        with col2:
+            st.markdown("**Output:**")
+            st.markdown("""
+## Cell Biology
+
+Cells are the basic units of life. They contain genetic material and organelles that perform various functions.
+
+### Cell Types:
+1. Prokaryotic cells
+2. Eukaryotic cells
+
+These cells have distinct structures and functions including energy production and protein synthesis.
+            """)
+        
+        st.markdown("---")
+        
+        # Example 3
+        st.subheader("📌 Example 3: Mixed Format with Keywords")
+        
+        col1, col2 = st.columns([1, 1])
+        
+        with col1:
+            st.markdown("**Input:**")
+            st.code("""
+Chapter Summary:
+
+This chapter covered multiple 
+concepts in depth. The main themes 
+included cellular structure and 
+function.
+
+Important Terms:
+- MITOCHONDRIA - Energy production
+- NUCLEUS - Genetic control center
+- RIBOSOMES - Protein synthesis
+
+Understanding these concepts is 
+essential for advanced biology 
+studies.
+            """, language="text")
+        
+        with col2:
+            st.markdown("**Output:**")
+            st.markdown("""
+## Chapter Summary
+
+This chapter covered multiple concepts in depth. The main themes included cellular structure and function.
+
+### Important Terms:
+- **MITOCHONDRIA** - Energy production
+- **NUCLEUS** - Genetic control center
+- **RIBOSOMES** - Protein synthesis
+
+Understanding these concepts is essential for advanced biology studies.
+            """)
+        
+        st.markdown("---")
+        st.success("""
+        💡 **Key Takeaways from Examples:**
+        - Headings with colons are detected automatically
+        - Lists (bullets and numbered) are preserved
+        - CAPITALIZED terms are bolded
+        - Paragraph structure is maintained
+        - Natural flow is kept intact
+        """)
 
 
 if __name__ == "__main__":
